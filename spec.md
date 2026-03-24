@@ -1,18 +1,21 @@
-# Dragon vs Tiger Insights Landing Page
+# Dragon vs Tiger Insights
 
 ## Current State
-New project — no existing pages or components.
+New project. Empty backend and frontend.
 
 ## Requested Changes (Diff)
 
 ### Add
-- Full single-page landing page targeting Telegram channel growth
-- Hero section with headline, subheadline, educational disclaimer, and CTA
-- Features section: Daily game insights, Strategy discussions, Community support
-- How it works: 3 steps (Join Telegram, Follow updates, Learn & play responsibly)
-- Animated CTA button linking to https://t.me/+Enkv9X8zDGc2NWJl
-- Sticky floating CTA button
-- Footer with disclaimer
+- Full single-page landing site targeting Telegram channel sign-ups
+- Hero section with animated particle/gradient background, headline, subheadline, trust line, and primary CTA button
+- Features section (4 cards: Daily insights, Strategy discussions, Real-time updates, Beginner-friendly guidance)
+- How It Works section (3 numbered steps)
+- Main CTA section with large animated gradient button linking to https://t.me/+Enkv9X8zDGc2NWJl
+- Social proof section with animated counters
+- Sticky floating bottom CTA button with same gradient animation
+- Live engagement notifications (fake live join toasts)
+- Disclaimer footer section
+- Import Poppins/Montserrat from Google Fonts
 
 ### Modify
 N/A
@@ -21,12 +24,10 @@ N/A
 N/A
 
 ## Implementation Plan
-1. Build a static-first frontend (no backend data needed)
-2. Hero section with bold headline, subheadline, disclaimer note, and primary CTA
-3. Features grid (3 cards)
-4. How it works steps (3 steps)
-5. Bottom CTA band
-6. Sticky floating button (pulse glow + hover scale)
-7. Footer disclaimer
-8. Mobile-first responsive layout
-9. Smooth scroll animations (CSS + Intersection Observer)
+1. Backend: minimal/empty (no data persistence needed)
+2. Frontend: single-page React app with all sections above
+   - Tailwind custom colors for neon palette
+   - CSS keyframe animations for gradient button, pulse glow, particles
+   - useEffect for animated counters and random join notifications
+   - Sticky floating button always visible
+   - Mobile-first layout

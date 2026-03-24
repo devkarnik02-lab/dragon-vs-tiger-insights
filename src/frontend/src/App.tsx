@@ -1,380 +1,621 @@
-import {
-  ArrowRight,
-  BarChart3,
-  BookOpen,
-  CheckCircle2,
-  MessageSquare,
-  Send,
-  Shield,
-  Sparkles,
-  TrendingUp,
-  Users,
-} from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import { AnimatedCounter } from "./components/AnimatedCounter";
+import { LiveNotifications } from "./components/LiveNotifications";
+import { ParticleCanvas } from "./components/ParticleCanvas";
 
-// ─── Scroll-reveal hook ───────────────────────────────────────────────────────
-function useScrollReveal() {
-  useEffect(() => {
-    const els = document.querySelectorAll(".fade-in-up");
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("visible");
-          }
-        }
-      },
-      { threshold: 0.12 },
-    );
-    for (const el of els) {
-      observer.observe(el);
-    }
-    return () => observer.disconnect();
-  }, []);
+const TELEGRAM_LINK = "https://t.me/+Enkv9X8zDGc2NWJl";
+
+function CtaButton({
+  children,
+  size = "md",
+  "data-ocid": ocid,
+}: {
+  children: React.ReactNode;
+  size?: "md" | "lg";
+  "data-ocid"?: string;
+}) {
+  return (
+    <a
+      href={TELEGRAM_LINK}
+      target="_blank"
+      rel="noopener noreferrer"
+      data-ocid={ocid}
+      className="cta-btn"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "10px",
+        borderRadius: "999px",
+        fontFamily: "Poppins, sans-serif",
+        fontWeight: 800,
+        textDecoration: "none",
+        color: "#fff",
+        letterSpacing: "0.03em",
+        padding: size === "lg" ? "20px 48px" : "14px 32px",
+        fontSize: size === "lg" ? "20px" : "16px",
+        cursor: "pointer",
+        border: "none",
+        outline: "none",
+        userSelect: "none",
+      }}
+    >
+      {children}
+      <span
+        className="live-dot"
+        style={{
+          width: "10px",
+          height: "10px",
+          borderRadius: "50%",
+          flexShrink: 0,
+        }}
+      />
+      <span
+        style={{
+          fontSize: size === "lg" ? "13px" : "11px",
+          fontWeight: 700,
+          letterSpacing: "0.1em",
+          color: "#ff2e2e",
+          background: "rgba(255,46,46,0.15)",
+          borderRadius: "4px",
+          padding: "2px 6px",
+        }}
+      >
+        LIVE
+      </span>
+    </a>
+  );
 }
 
-// ─── Sticky floating button visibility ───────────────────────────────────────
-function useStickyButton() {
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 500);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-  return visible;
-}
-
-// ─── Nav ──────────────────────────────────────────────────────────────────────
-function Nav() {
-  const [scrolled, setScrolled] = useState(false);
+function Header({ scrolled }: { scrolled: boolean }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   const navLinks = [
-    { label: "Home", href: "#hero" },
-    { label: "Features", href: "#features" },
-    { label: "How It Works", href: "#how-it-works" },
-    { label: "Community", href: "#cta" },
+    { label: "HOME", href: "#home" },
+    { label: "FEATURES", href: "#features" },
+    { label: "HOW IT WORKS", href: "#how-it-works" },
+    { label: "COMMUNITY", href: "#community" },
   ];
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? "bg-[oklch(0.08_0.003_285/0.95)] backdrop-blur-md border-b border-[oklch(0.74_0.13_85/0.15)]"
-          : "bg-transparent"
-      }`}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+        transition: "background 0.3s ease, backdrop-filter 0.3s ease",
+        background: scrolled ? "rgba(13,13,13,0.95)" : "transparent",
+        backdropFilter: scrolled ? "blur(16px)" : "none",
+        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "none",
+      }}
     >
-      <nav className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16 md:h-20">
+      <div
+        style={{
+          maxWidth: "1200px",
+          margin: "0 auto",
+          padding: "0 20px",
+          height: "64px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         {/* Logo */}
-        <a
-          href="#hero"
-          className="flex items-center gap-2"
-          data-ocid="nav.link"
+        <div
+          style={{
+            fontFamily: "Poppins, sans-serif",
+            fontWeight: 900,
+            fontSize: "22px",
+            letterSpacing: "0.05em",
+          }}
         >
-          <span className="text-2xl">🐉</span>
-          <span className="font-black text-sm sm:text-base tracking-widest uppercase gold-gradient-text">
-            Dragon vs Tiger
-          </span>
-          <span className="text-2xl">🐅</span>
-        </a>
+          <span className="neon-text-gradient">DvT</span>
+          <span style={{ marginLeft: 4 }}>🔥</span>
+        </div>
 
-        {/* Desktop nav */}
-        <ul className="hidden md:flex items-center gap-6">
+        {/* Desktop Nav */}
+        <nav
+          style={{ display: "flex", gap: "32px", alignItems: "center" }}
+          className="hidden md:flex"
+        >
           {navLinks.map((link) => (
-            <li key={link.href}>
+            <a
+              key={link.label}
+              href={link.href}
+              data-ocid={`nav.${link.label.toLowerCase().replace(/ /g, "_")}.link`}
+              style={{
+                fontFamily: "Poppins, sans-serif",
+                fontSize: "12px",
+                fontWeight: 600,
+                letterSpacing: "0.12em",
+                color: "#a9afbf",
+                textDecoration: "none",
+                transition: "color 0.2s ease",
+                textTransform: "uppercase",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "#f2f4ff";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "#a9afbf";
+              }}
+            >
+              {link.label}
+            </a>
+          ))}
+          <a
+            href={TELEGRAM_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-ocid="nav.join_now.button"
+            style={{
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "12px",
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              color: "#f2f4ff",
+              textDecoration: "none",
+              padding: "8px 20px",
+              borderRadius: "999px",
+              border: "1px solid transparent",
+              background:
+                "linear-gradient(#0d0d0d, #0d0d0d) padding-box, linear-gradient(90deg, #ff2e2e, #2979ff, #9c27b0, #f5c542) border-box",
+              transition: "box-shadow 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = "0 0 16px rgba(41,121,255,0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+            }}
+          >
+            JOIN NOW
+          </a>
+        </nav>
+
+        {/* Mobile menu button */}
+        <button
+          type="button"
+          className="md:hidden"
+          onClick={() => setMenuOpen((o) => !o)}
+          data-ocid="nav.menu.toggle"
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: "#f2f4ff",
+            fontSize: "24px",
+            padding: "4px",
+          }}
+          aria-label="Toggle menu"
+        >
+          {menuOpen ? "✕" : "☰"}
+        </button>
+      </div>
+
+      {/* Mobile dropdown */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              background: "rgba(13,13,13,0.98)",
+              borderBottom: "1px solid rgba(255,255,255,0.06)",
+              padding: "16px 20px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px",
+            }}
+          >
+            {navLinks.map((link) => (
               <a
+                key={link.label}
                 href={link.href}
-                data-ocid="nav.link"
-                className="text-sm font-medium text-[oklch(0.68_0_0)] hover:text-[oklch(0.74_0.13_85)] transition-colors duration-200 tracking-wide"
+                onClick={() => setMenuOpen(false)}
+                style={{
+                  fontFamily: "Poppins, sans-serif",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  letterSpacing: "0.1em",
+                  color: "#a9afbf",
+                  textDecoration: "none",
+                  textTransform: "uppercase",
+                }}
               >
                 {link.label}
               </a>
-            </li>
-          ))}
-        </ul>
-
-        {/* Desktop CTA */}
-        <a
-          href="https://t.me/+Enkv9X8zDGc2NWJl"
-          target="_blank"
-          rel="noopener noreferrer"
-          data-ocid="nav.primary_button"
-          className="hidden md:flex items-center gap-2 btn-red text-white font-bold text-sm px-5 py-2.5 rounded-full"
-        >
-          <Send className="w-4 h-4" />
-          Join Now
-        </a>
-
-        {/* Mobile hamburger */}
-        <button
-          type="button"
-          className="md:hidden flex flex-col gap-1.5 p-2"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle menu"
-          data-ocid="nav.toggle"
-        >
-          <span
-            className={`block w-6 h-0.5 bg-[oklch(0.74_0.13_85)] transition-all duration-200 ${menuOpen ? "rotate-45 translate-y-2" : ""}`}
-          />
-          <span
-            className={`block w-6 h-0.5 bg-[oklch(0.74_0.13_85)] transition-all duration-200 ${menuOpen ? "opacity-0" : ""}`}
-          />
-          <span
-            className={`block w-6 h-0.5 bg-[oklch(0.74_0.13_85)] transition-all duration-200 ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`}
-          />
-        </button>
-      </nav>
-
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div className="md:hidden bg-[oklch(0.10_0.003_285/0.97)] backdrop-blur-md border-t border-[oklch(0.74_0.13_85/0.15)] px-4 pb-4">
-          <ul className="flex flex-col gap-3 pt-4">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <a
-                  href={link.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="block text-base font-medium text-[oklch(0.68_0_0)] hover:text-[oklch(0.74_0.13_85)] transition-colors py-1"
-                >
-                  {link.label}
-                </a>
-              </li>
             ))}
-            <li>
-              <a
-                href="https://t.me/+Enkv9X8zDGc2NWJl"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 btn-red text-white font-bold px-5 py-3 rounded-full mt-2"
-              >
-                <Send className="w-4 h-4" /> Join on Telegram
-              </a>
-            </li>
-          </ul>
-        </div>
-      )}
+            <CtaButton size="md" data-ocid="nav.mobile.join_button">
+              👉 JOIN TELEGRAM NOW
+            </CtaButton>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
 
-// ─── Hero ─────────────────────────────────────────────────────────────────────
-function Hero() {
+function HeroSection() {
+  const flags = ["🇮🇳", "🇸🇦", "🇲🇾", "🇵🇭", "🇧🇩"];
+
   return (
     <section
-      id="hero"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20"
+      id="home"
+      style={{
+        position: "relative",
+        minHeight: "100vh",
+        background:
+          "radial-gradient(ellipse 80% 60% at 50% 30%, rgba(41,121,255,0.08) 0%, rgba(156,39,176,0.06) 40%, transparent 70%), #0d0d0d",
+        display: "flex",
+        alignItems: "center",
+        overflow: "hidden",
+        paddingTop: "64px",
+      }}
     >
-      {/* Background layers */}
-      <div className="absolute inset-0 spotlight pointer-events-none" />
+      <ParticleCanvas />
+
+      {/* Glow orbs */}
       <div
-        className="absolute inset-0 pointer-events-none"
         style={{
-          background:
-            "radial-gradient(ellipse 60% 50% at 70% 50%, oklch(0.43 0.20 25 / 0.12) 0%, transparent 60%)",
+          position: "absolute",
+          top: "20%",
+          left: "-10%",
+          width: "400px",
+          height: "400px",
+          borderRadius: "50%",
+          background: "rgba(255,46,46,0.06)",
+          filter: "blur(80px)",
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: "10%",
+          right: "-5%",
+          width: "500px",
+          height: "500px",
+          borderRadius: "50%",
+          background: "rgba(41,121,255,0.06)",
+          filter: "blur(100px)",
+          pointerEvents: "none",
         }}
       />
 
-      {/* Floating orbs */}
-      <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-[oklch(0.43_0.20_25/0.06)] blur-3xl animate-float-1 pointer-events-none" />
-      <div className="absolute bottom-1/3 right-1/4 w-48 h-48 rounded-full bg-[oklch(0.74_0.13_85/0.05)] blur-3xl animate-float-2 pointer-events-none" />
-      <div className="absolute top-1/2 right-1/3 w-32 h-32 rounded-full bg-[oklch(0.43_0.20_25/0.08)] blur-2xl animate-float-3 pointer-events-none" />
+      <div
+        style={{
+          position: "relative",
+          zIndex: 1,
+          maxWidth: "1200px",
+          margin: "0 auto",
+          padding: "60px 20px",
+          display: "grid",
+          gridTemplateColumns: "1fr",
+          gap: "40px",
+          alignItems: "center",
+        }}
+        className="lg:grid-cols-2"
+      >
+        {/* Left */}
+        <motion.div
+          initial={{ opacity: 0, x: -40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          style={{ display: "flex", flexDirection: "column", gap: "24px" }}
+        >
+          {/* Eyebrow */}
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              background: "rgba(41,121,255,0.1)",
+              border: "1px solid rgba(41,121,255,0.25)",
+              borderRadius: "999px",
+              padding: "6px 16px",
+              alignSelf: "flex-start",
+            }}
+          >
+            <span
+              style={{
+                fontFamily: "Poppins, sans-serif",
+                fontSize: "11px",
+                fontWeight: 700,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                color: "#2979ff",
+              }}
+            >
+              DRAGON VS TIGER INSIGHTS CHANNEL 🔥
+            </span>
+          </div>
 
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-16 md:py-24">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          {/* Left content */}
-          <div className="text-center md:text-left">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 border border-[oklch(0.74_0.13_85/0.35)] bg-[oklch(0.74_0.13_85/0.07)] rounded-full px-4 py-1.5 mb-6">
-              <Sparkles className="w-3.5 h-3.5 text-[oklch(0.74_0.13_85)]" />
-              <span className="text-xs font-semibold tracking-widest uppercase text-[oklch(0.74_0.13_85)]">
-                For educational &amp; entertainment purposes only
-              </span>
-            </div>
+          {/* Headline */}
+          <h1
+            style={{
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "clamp(36px, 6vw, 64px)",
+              fontWeight: 900,
+              lineHeight: 1.05,
+              color: "#f2f4ff",
+              margin: 0,
+            }}
+          >
+            Get <span className="neon-text-gradient">Daily Analysis,</span>
+            <br />
+            Trends &amp; Strategies
+          </h1>
 
-            {/* Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black uppercase leading-tight tracking-tight mb-6">
-              <span className="gold-gradient-text">Join Our</span>
-              <br />
-              <span className="text-white">Dragon vs Tiger</span>
-              <br />
-              <span className="gold-gradient-text">Insights Channel</span>
-            </h1>
+          {/* Trust line */}
+          <p
+            style={{
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "15px",
+              fontWeight: 400,
+              color: "#a9afbf",
+              margin: 0,
+            }}
+          >
+            ✅ Active community &nbsp;|&nbsp; 🔄 Regular updates &nbsp;|&nbsp;
+            🆓 Free access
+          </p>
 
-            {/* Subheadline */}
-            <p className="text-base sm:text-lg text-[oklch(0.68_0_0)] max-w-md mx-auto md:mx-0 mb-8 leading-relaxed">
-              Get daily analysis, strategies, and updates — curated by
-              enthusiasts for the community.
-            </p>
+          {/* CTA */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "16px",
+              flexWrap: "wrap",
+            }}
+          >
+            <CtaButton size="lg" data-ocid="hero.join_now.primary_button">
+              👉 JOIN TELEGRAM NOW
+            </CtaButton>
+          </div>
 
-            {/* CTA */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start mb-6">
-              <a
-                href="https://t.me/+Enkv9X8zDGc2NWJl"
-                target="_blank"
-                rel="noopener noreferrer"
-                data-ocid="hero.primary_button"
-                className="btn-red animate-pulse-glow inline-flex items-center justify-center gap-3 text-white font-bold text-base px-8 py-4 rounded-full"
+          {/* Members badge */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            {flags.map((flag) => (
+              <span
+                key={flag}
+                style={{
+                  fontSize: "24px",
+                  filter: "drop-shadow(0 0 6px rgba(255,200,0,0.5))",
+                }}
               >
-                <Send className="w-5 h-5" />
-                Join on Telegram
-                <ArrowRight className="w-5 h-5" />
-              </a>
-            </div>
+                {flag}
+              </span>
+            ))}
+            <span
+              style={{
+                fontFamily: "Poppins, sans-serif",
+                fontSize: "13px",
+                color: "#a9afbf",
+                fontWeight: 600,
+              }}
+            >
+              12,800+ members worldwide
+            </span>
+          </div>
+        </motion.div>
 
-            {/* Trust line */}
-            <div className="flex items-center gap-4 justify-center md:justify-start">
-              <div className="flex items-center gap-1.5 text-[oklch(0.68_0_0)] text-sm">
-                <CheckCircle2 className="w-4 h-4 text-[oklch(0.74_0.13_85)]" />
-                Active Community
-              </div>
-              <div className="w-px h-4 bg-[oklch(0.74_0.13_85/0.3)]" />
-              <div className="flex items-center gap-1.5 text-[oklch(0.68_0_0)] text-sm">
-                <TrendingUp className="w-4 h-4 text-[oklch(0.74_0.13_85)]" />
-                Daily Insights
-              </div>
+        {/* Right - Dragon vs Tiger Illustration */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.85 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+          className="hero-illustration"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              position: "relative",
+              width: "320px",
+              height: "320px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {/* Outer glow ring */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                borderRadius: "50%",
+                background:
+                  "conic-gradient(from 0deg, #ff2e2e22, #2979ff22, #9c27b022, #f5c54222, #ff2e2e22)",
+                filter: "blur(20px)",
+                animation: "rotateSlow 8s linear infinite",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                inset: "20px",
+                borderRadius: "50%",
+                border: "2px solid transparent",
+                background:
+                  "linear-gradient(#0d0d0d, #0d0d0d) padding-box, conic-gradient(from 0deg, #ff2e2e, #2979ff, #9c27b0, #f5c542, #ff2e2e) border-box",
+                animation: "rotateSlow 6s linear infinite",
+              }}
+            />
+            {/* VS Text center */}
+            <div
+              style={{
+                position: "absolute",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                zIndex: 2,
+              }}
+            >
+              <span style={{ fontSize: "72px", lineHeight: 1 }}>🐉</span>
+              <span
+                style={{
+                  fontFamily: "Poppins, sans-serif",
+                  fontWeight: 900,
+                  fontSize: "28px",
+                  letterSpacing: "0.15em",
+                }}
+                className="neon-text-gradient"
+              >
+                VS
+              </span>
+              <span style={{ fontSize: "72px", lineHeight: 1 }}>🐅</span>
             </div>
           </div>
-
-          {/* Right — decorative dragon/tiger illustration */}
-          <div className="flex items-center justify-center relative">
-            <div className="relative w-64 h-64 md:w-80 md:h-80">
-              {/* Outer glow ring */}
-              <div
-                className="absolute inset-0 rounded-full"
-                style={{
-                  background:
-                    "conic-gradient(from 0deg, oklch(0.43 0.20 25 / 0.6), oklch(0.74 0.13 85 / 0.6), oklch(0.43 0.20 25 / 0.6))",
-                  padding: "2px",
-                  borderRadius: "50%",
-                  animation: "float-orb 4s ease-in-out infinite",
-                }}
-              />
-              <div
-                className="absolute inset-1 rounded-full"
-                style={{
-                  background: "oklch(0.10 0.003 285)",
-                }}
-              />
-              {/* Emoji display */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                <div className="flex items-center gap-4">
-                  <span
-                    className="text-6xl md:text-7xl"
-                    style={{
-                      filter: "drop-shadow(0 0 20px oklch(0.43 0.20 25 / 0.8))",
-                    }}
-                  >
-                    🐉
-                  </span>
-                  <span className="text-3xl font-black text-[oklch(0.74_0.13_85)] tracking-widest">
-                    VS
-                  </span>
-                  <span
-                    className="text-6xl md:text-7xl"
-                    style={{
-                      filter: "drop-shadow(0 0 20px oklch(0.68 0.20 40 / 0.8))",
-                    }}
-                  >
-                    🐅
-                  </span>
-                </div>
-                <div
-                  className="text-xs font-bold uppercase tracking-widest mt-2"
-                  style={{ color: "oklch(0.74 0.13 85)" }}
-                >
-                  Insights &amp; Analysis
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        </motion.div>
       </div>
-
-      {/* Bottom fade */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
-        style={{
-          background:
-            "linear-gradient(to bottom, transparent, oklch(0.08 0.003 285))",
-        }}
-      />
     </section>
   );
 }
 
-// ─── Features ─────────────────────────────────────────────────────────────────
-const FEATURES = [
-  {
-    icon: BarChart3,
-    title: "Daily Game Insights",
-    description:
-      "Receive curated pattern analysis and trend breakdowns every day — helping you stay informed before every session.",
-  },
-  {
-    icon: MessageSquare,
-    title: "Strategy Discussions",
-    description:
-      "Engage with a community of enthusiasts sharing tactics, observations, and thoughtful discussions around the game.",
-  },
-  {
-    icon: Users,
-    title: "Community Support",
-    description:
-      "Never play alone. Get support, share experiences, and grow alongside fellow members in a positive environment.",
-  },
-];
+function FeaturesSection() {
+  const features = [
+    {
+      icon: "📊",
+      color: "#ff2e2e",
+      title: "Daily Insights & Analysis",
+      desc: "In-depth breakdowns of Dragon vs Tiger patterns, delivered fresh every day.",
+    },
+    {
+      icon: "♟️",
+      color: "#2979ff",
+      title: "Strategy Discussions",
+      desc: "Community-driven strategy threads. Learn from thousands of experienced members.",
+    },
+    {
+      icon: "⚡",
+      color: "#9c27b0",
+      title: "Real-time Updates",
+      desc: "Instant alerts and live commentary as situations develop — never miss a beat.",
+    },
+    {
+      icon: "🎓",
+      color: "#f5c542",
+      title: "Beginner-friendly Guidance",
+      desc: "Step-by-step guides and educational content for members at every level.",
+    },
+  ];
 
-function Features() {
   return (
-    <section id="features" className="py-20 md:py-28 relative">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        {/* Header */}
-        <div className="text-center mb-14 fade-in-up">
-          <p className="text-xs font-bold tracking-widest uppercase text-[oklch(0.43_0.20_25)] mb-3">
-            What You Get
+    <section
+      id="features"
+      style={{
+        padding: "80px 20px",
+        background: "#0d0d0d",
+        position: "relative",
+      }}
+    >
+      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          style={{ textAlign: "center", marginBottom: "56px" }}
+        >
+          <p
+            style={{
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "12px",
+              fontWeight: 700,
+              letterSpacing: "0.2em",
+              color: "#2979ff",
+              textTransform: "uppercase",
+              marginBottom: "12px",
+            }}
+          >
+            Why Join Us
           </p>
-          <h2 className="text-3xl sm:text-4xl font-black uppercase gold-gradient-text mb-4">
-            Channel Features
+          <h2
+            className="section-title"
+            style={{
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "clamp(24px, 4vw, 36px)",
+              color: "#f2f4ff",
+              margin: 0,
+            }}
+          >
+            Everything You Need to Stay{" "}
+            <span className="neon-text-gradient">Informed</span>
           </h2>
-          <p className="text-[oklch(0.68_0_0)] max-w-xl mx-auto text-sm sm:text-base">
-            Everything you need to stay ahead of the game — delivered straight
-            to your Telegram.
-          </p>
-        </div>
+        </motion.div>
 
-        {/* Cards */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {FEATURES.map((feat, i) => (
-            <div
-              key={feat.title}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+            gap: "24px",
+          }}
+        >
+          {features.map((f, i) => (
+            <motion.div
+              key={f.title}
               data-ocid={`features.item.${i + 1}`}
-              className="card-glow bg-[oklch(0.13_0.004_285)] rounded-2xl p-7 fade-in-up"
-              style={{ transitionDelay: `${i * 120}ms` }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              className="neon-card"
+              style={{
+                borderRadius: "16px",
+                padding: "32px 24px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "16px",
+              }}
             >
-              {/* Icon tile */}
               <div
-                className="w-14 h-14 rounded-xl flex items-center justify-center mb-5"
                 style={{
-                  background:
-                    "linear-gradient(135deg, oklch(0.43 0.20 25 / 0.3), oklch(0.74 0.13 85 / 0.15))",
-                  border: "1px solid oklch(0.74 0.13 85 / 0.25)",
+                  width: "52px",
+                  height: "52px",
+                  borderRadius: "12px",
+                  background: `${f.color}18`,
+                  border: `1px solid ${f.color}40`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "24px",
+                  boxShadow: `0 0 16px ${f.color}30`,
                 }}
               >
-                <feat.icon className="w-7 h-7 text-[oklch(0.74_0.13_85)]" />
+                {f.icon}
               </div>
-              <h3 className="text-lg font-bold text-white mb-3 uppercase tracking-wide">
-                {feat.title}
+              <h3
+                style={{
+                  fontFamily: "Poppins, sans-serif",
+                  fontSize: "17px",
+                  fontWeight: 700,
+                  color: "#f2f4ff",
+                  margin: 0,
+                }}
+              >
+                {f.title}
               </h3>
-              <p className="text-[oklch(0.68_0_0)] text-sm leading-relaxed">
-                {feat.description}
+              <p
+                style={{
+                  fontFamily: "Poppins, sans-serif",
+                  fontSize: "14px",
+                  color: "#a9afbf",
+                  lineHeight: 1.6,
+                  margin: 0,
+                }}
+              >
+                {f.desc}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -382,250 +623,760 @@ function Features() {
   );
 }
 
-// ─── How It Works ─────────────────────────────────────────────────────────────
-const STEPS = [
-  {
-    number: "01",
-    icon: Send,
-    title: "Join Telegram",
-    description:
-      "Click the Join button and you'll be taken directly to our Telegram channel. One tap is all it takes.",
-  },
-  {
-    number: "02",
-    icon: BookOpen,
-    title: "Follow Updates",
-    description:
-      "Turn on notifications and receive our daily insights, pattern analysis, and community discussions.",
-  },
-  {
-    number: "03",
-    icon: Shield,
-    title: "Learn & Play Responsibly",
-    description:
-      "Use the knowledge you gain wisely. We encourage responsible participation and mindful decision-making.",
-  },
-];
+function HowItWorksSection() {
+  const steps = [
+    {
+      num: "01",
+      color: "#ff2e2e",
+      title: "Join Telegram Channel",
+      desc: "Click the JOIN NOW button and get instant access to our private Telegram community.",
+      icon: "📱",
+    },
+    {
+      num: "02",
+      color: "#9c27b0",
+      title: "Check Daily Updates",
+      desc: "Every day we share fresh analysis, pattern observations, and strategy breakdowns.",
+      icon: "📋",
+    },
+    {
+      num: "03",
+      color: "#2979ff",
+      title: "Follow Insights Responsibly",
+      desc: "Use our educational content to stay informed. Always play responsibly.",
+      icon: "🎯",
+    },
+  ];
 
-function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-20 md:py-28 relative">
-      {/* Subtle bg tint */}
+    <section
+      id="how-it-works"
+      style={{
+        padding: "80px 20px",
+        background: "linear-gradient(180deg, #0d0d0d 0%, #11111a 100%)",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
       <div
-        className="absolute inset-0 pointer-events-none"
         style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "600px",
+          height: "300px",
           background:
-            "radial-gradient(ellipse 70% 50% at 50% 50%, oklch(0.74 0.13 85 / 0.03) 0%, transparent 70%)",
+            "radial-gradient(ellipse, rgba(156,39,176,0.05), transparent 70%)",
+          pointerEvents: "none",
         }}
       />
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
-        {/* Header */}
-        <div className="text-center mb-14 fade-in-up">
-          <p className="text-xs font-bold tracking-widest uppercase text-[oklch(0.43_0.20_25)] mb-3">
-            Simple &amp; Fast
-          </p>
-          <h2 className="text-3xl sm:text-4xl font-black uppercase gold-gradient-text mb-4">
-            How It Works
-          </h2>
-          <p className="text-[oklch(0.68_0_0)] max-w-xl mx-auto text-sm sm:text-base">
-            Three easy steps to start receiving Dragon vs Tiger insights today.
-          </p>
-        </div>
-
-        {/* Steps */}
-        <div className="relative max-w-2xl mx-auto">
-          {/* Vertical connector */}
-          <div className="hidden md:block absolute left-8 top-12 bottom-12 w-0.5 step-connector rounded-full" />
-
-          <div className="flex flex-col gap-8">
-            {STEPS.map((step, i) => (
-              <div
-                key={step.number}
-                data-ocid={`steps.item.${i + 1}`}
-                className="flex gap-6 items-start fade-in-up"
-                style={{ transitionDelay: `${i * 150}ms` }}
-              >
-                {/* Step number + icon */}
-                <div className="flex-shrink-0 relative z-10">
-                  <div
-                    className="w-16 h-16 rounded-2xl flex flex-col items-center justify-center gap-0.5"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, oklch(0.27 0.15 25), oklch(0.50 0.22 25))",
-                      boxShadow: "0 0 24px oklch(0.43 0.20 25 / 0.4)",
-                    }}
-                  >
-                    <step.icon className="w-6 h-6 text-white" />
-                    <span className="text-[10px] font-black text-[oklch(0.74_0.13_85)] tracking-widest">
-                      {step.number}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="pt-2">
-                  <h3 className="text-xl font-bold text-white mb-2 uppercase tracking-wide">
-                    {step.title}
-                  </h3>
-                  <p className="text-[oklch(0.68_0_0)] text-sm leading-relaxed">
-                    {step.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── Bottom CTA Band ──────────────────────────────────────────────────────────
-function CtaBand() {
-  return (
-    <section id="cta" className="py-20 md:py-28">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="gold-border-panel rounded-3xl p-10 md:p-16 text-center fade-in-up relative overflow-hidden">
-          {/* Inner glow */}
-          <div
-            className="absolute inset-0 pointer-events-none rounded-3xl"
+      <div
+        style={{
+          maxWidth: "1200px",
+          margin: "0 auto",
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          style={{ textAlign: "center", marginBottom: "56px" }}
+        >
+          <p
             style={{
-              background:
-                "radial-gradient(ellipse 80% 60% at 50% 50%, oklch(0.43 0.20 25 / 0.15) 0%, oklch(0.74 0.13 85 / 0.05) 50%, transparent 70%)",
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "12px",
+              fontWeight: 700,
+              letterSpacing: "0.2em",
+              color: "#9c27b0",
+              textTransform: "uppercase",
+              marginBottom: "12px",
             }}
-          />
+          >
+            Simple Process
+          </p>
+          <h2
+            className="section-title"
+            style={{
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "clamp(24px, 4vw, 36px)",
+              color: "#f2f4ff",
+              margin: 0,
+            }}
+          >
+            How It <span className="neon-text-gradient">Works</span>
+          </h2>
+        </motion.div>
 
-          <div className="relative">
-            <p className="text-xs font-bold tracking-widest uppercase text-[oklch(0.43_0.20_25)] mb-4">
-              Don't Miss Out
-            </p>
-            <h2 className="text-3xl sm:text-5xl font-black uppercase mb-4">
-              <span className="gold-gradient-text">Ready to</span>
-              <br />
-              <span className="text-white">Get Ahead?</span>
-            </h2>
-            <p className="text-[oklch(0.68_0_0)] max-w-lg mx-auto mb-10 text-sm sm:text-base leading-relaxed">
-              Join hundreds of members already benefiting from daily Dragon vs
-              Tiger insights and community discussions.
-            </p>
-
-            <a
-              href="https://t.me/+Enkv9X8zDGc2NWJl"
-              target="_blank"
-              rel="noopener noreferrer"
-              data-ocid="cta.primary_button"
-              className="btn-red animate-pulse-glow inline-flex items-center gap-3 text-white font-bold text-lg px-10 py-5 rounded-full"
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+            gap: "32px",
+          }}
+        >
+          {steps.map((step, i) => (
+            <motion.div
+              key={step.num}
+              data-ocid={`how_it_works.item.${i + 1}`}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.5, delay: i * 0.15 }}
+              style={{
+                background: "rgba(26, 27, 34, 0.6)",
+                border: `1px solid ${step.color}25`,
+                borderRadius: "20px",
+                padding: "36px 28px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "20px",
+                position: "relative",
+                overflow: "hidden",
+              }}
             >
-              <Send className="w-5 h-5" />
-              Join on Telegram
-              <ArrowRight className="w-5 h-5" />
-            </a>
-
-            <p className="mt-6 text-[oklch(0.50_0_0)] text-xs">
-              Free to join · No registration required
-            </p>
-          </div>
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  right: 0,
+                  width: "120px",
+                  height: "120px",
+                  background: `radial-gradient(circle, ${step.color}12, transparent 70%)`,
+                  borderRadius: "0 20px 0 0",
+                  pointerEvents: "none",
+                }}
+              />
+              <div
+                style={{
+                  fontFamily: "Poppins, sans-serif",
+                  fontSize: "52px",
+                  fontWeight: 900,
+                  color: step.color,
+                  lineHeight: 1,
+                  textShadow: `0 0 20px ${step.color}60`,
+                }}
+              >
+                {step.num}
+              </div>
+              <div style={{ fontSize: "36px" }}>{step.icon}</div>
+              <h3
+                style={{
+                  fontFamily: "Poppins, sans-serif",
+                  fontSize: "19px",
+                  fontWeight: 700,
+                  color: "#f2f4ff",
+                  margin: 0,
+                }}
+              >
+                {step.title}
+              </h3>
+              <p
+                style={{
+                  fontFamily: "Poppins, sans-serif",
+                  fontSize: "14px",
+                  color: "#a9afbf",
+                  lineHeight: 1.65,
+                  margin: 0,
+                }}
+              >
+                {step.desc}
+              </p>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-// ─── Footer ───────────────────────────────────────────────────────────────────
+function MainCtaSection() {
+  const ringsSizes = [300, 500, 700];
+
+  return (
+    <section
+      style={{
+        padding: "100px 20px",
+        background:
+          "radial-gradient(ellipse 80% 70% at 50% 50%, rgba(41,121,255,0.1) 0%, rgba(156,39,176,0.08) 40%, rgba(255,46,46,0.05) 70%, transparent 100%), #0d0d0d",
+        textAlign: "center",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Decorative rings */}
+      {ringsSizes.map((size) => (
+        <div
+          key={size}
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: `${size}px`,
+            height: `${size}px`,
+            borderRadius: "50%",
+            border: "1px solid rgba(41,121,255,0.08)",
+            pointerEvents: "none",
+          }}
+        />
+      ))}
+
+      <div
+        style={{
+          position: "relative",
+          zIndex: 1,
+          maxWidth: "700px",
+          margin: "0 auto",
+        }}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "28px",
+            alignItems: "center",
+          }}
+        >
+          <p
+            style={{
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "12px",
+              fontWeight: 700,
+              letterSpacing: "0.2em",
+              color: "#f5c542",
+              textTransform: "uppercase",
+            }}
+          >
+            ⚡ Don&apos;t Miss Out
+          </p>
+          <h2
+            style={{
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "clamp(28px, 5vw, 48px)",
+              fontWeight: 900,
+              color: "#f2f4ff",
+              margin: 0,
+              lineHeight: 1.1,
+            }}
+          >
+            Ready to Get{" "}
+            <span className="neon-text-gradient">Real Insights?</span>
+          </h2>
+          <p
+            style={{
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "16px",
+              color: "#a9afbf",
+              margin: 0,
+              maxWidth: "480px",
+            }}
+          >
+            Join thousands of members who get daily Dragon vs Tiger analysis,
+            trends, and strategy breakdowns — completely free.
+          </p>
+          <CtaButton size="lg" data-ocid="cta.join_now.primary_button">
+            👉 JOIN TELEGRAM NOW
+          </CtaButton>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+function SocialProofSection() {
+  const stats = [
+    { value: 12800, suffix: "+", label: "Members", color: "#2979ff" },
+    { value: 92, suffix: "%", label: "Accuracy Rate", color: "#9c27b0" },
+    { value: 500, suffix: "+", label: "Daily Updates", color: "#ff2e2e" },
+    {
+      value: 49,
+      suffix: "★",
+      prefix: "",
+      label: "Rating",
+      color: "#f5c542",
+      display: "4.9★",
+    },
+  ];
+
+  const testimonials = [
+    {
+      name: "Ahmed K.",
+      flag: "🇸🇦",
+      text: "The daily analysis is spot on. I've learned more in one week here than months on my own.",
+      stars: 5,
+    },
+    {
+      name: "Priya M.",
+      flag: "🇮🇳",
+      text: "Super active community. Admin responds fast and the insights are genuinely helpful.",
+      stars: 5,
+    },
+    {
+      name: "Carlos R.",
+      flag: "🇲🇾",
+      text: "Best free channel for Dragon vs Tiger content. The beginner guides saved me a lot of time.",
+      stars: 5,
+    },
+  ];
+
+  const starArr = [1, 2, 3, 4, 5];
+
+  return (
+    <section
+      id="community"
+      style={{
+        padding: "80px 20px",
+        background: "#0d0d0d",
+      }}
+    >
+      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          style={{ textAlign: "center", marginBottom: "56px" }}
+        >
+          <p
+            style={{
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "12px",
+              fontWeight: 700,
+              letterSpacing: "0.2em",
+              color: "#f5c542",
+              textTransform: "uppercase",
+              marginBottom: "12px",
+            }}
+          >
+            Community Trust
+          </p>
+          <h2
+            className="section-title"
+            style={{
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "clamp(24px, 4vw, 36px)",
+              color: "#f2f4ff",
+              margin: 0,
+            }}
+          >
+            Thousands of Members{" "}
+            <span className="neon-text-gradient">Already Joined</span>
+          </h2>
+        </motion.div>
+
+        {/* Stats grid */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: "20px",
+            marginBottom: "64px",
+          }}
+        >
+          {stats.map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              data-ocid={`stats.item.${i + 1}`}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              style={{
+                background: "rgba(26, 27, 34, 0.7)",
+                border: `1px solid ${stat.color}25`,
+                borderRadius: "16px",
+                padding: "32px 24px",
+                textAlign: "center",
+                boxShadow: `0 0 32px ${stat.color}10`,
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "Poppins, sans-serif",
+                  fontSize: "36px",
+                  fontWeight: 900,
+                  color: stat.color,
+                  textShadow: `0 0 20px ${stat.color}60`,
+                  lineHeight: 1,
+                  marginBottom: "8px",
+                }}
+              >
+                {stat.display ?? (
+                  <AnimatedCounter
+                    target={stat.value}
+                    suffix={stat.suffix}
+                    prefix={stat.prefix}
+                  />
+                )}
+              </div>
+              <div
+                style={{
+                  fontFamily: "Poppins, sans-serif",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "#a9afbf",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                }}
+              >
+                {stat.label}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Testimonials */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "24px",
+          }}
+        >
+          {testimonials.map((t, i) => (
+            <motion.div
+              key={t.name}
+              data-ocid={`testimonials.item.${i + 1}`}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              className="neon-card"
+              style={{
+                borderRadius: "16px",
+                padding: "28px 24px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "16px",
+              }}
+            >
+              <div style={{ display: "flex", gap: "4px" }}>
+                {starArr.slice(0, t.stars).map((s) => (
+                  <span key={s} style={{ color: "#f5c542", fontSize: "16px" }}>
+                    ★
+                  </span>
+                ))}
+              </div>
+              <p
+                style={{
+                  fontFamily: "Poppins, sans-serif",
+                  fontSize: "14px",
+                  color: "#d0d4e0",
+                  lineHeight: 1.65,
+                  margin: 0,
+                  fontStyle: "italic",
+                }}
+              >
+                &ldquo;{t.text}&rdquo;
+              </p>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              >
+                <div
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "50%",
+                    background: "linear-gradient(135deg, #2979ff, #9c27b0)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "16px",
+                  }}
+                >
+                  {t.flag}
+                </div>
+                <span
+                  style={{
+                    fontFamily: "Poppins, sans-serif",
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    color: "#f2f4ff",
+                  }}
+                >
+                  {t.name}
+                </span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function DisclaimerSection() {
+  return (
+    <section
+      style={{
+        padding: "40px 20px",
+        background: "rgba(20,20,27,0.8)",
+        borderTop: "1px solid rgba(255,255,255,0.05)",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "800px",
+          margin: "0 auto",
+          textAlign: "center",
+        }}
+      >
+        <p
+          style={{
+            fontFamily: "Poppins, sans-serif",
+            fontSize: "12px",
+            color: "#5a5e6b",
+            lineHeight: 1.7,
+            margin: 0,
+          }}
+        >
+          ⚠️ <strong style={{ color: "#7a7e8b" }}>Disclaimer:</strong> This
+          channel is for informational and entertainment purposes only. The
+          content shared does not constitute financial, legal, or professional
+          advice. No guarantees of outcomes are made. Always participate
+          responsibly and within your means.
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function Footer() {
   const year = new Date().getFullYear();
   const hostname =
     typeof window !== "undefined" ? window.location.hostname : "";
+  const footerLinks = ["Home", "Features", "How It Works", "Community"];
 
   return (
-    <footer className="border-t border-[oklch(0.22_0.004_285)] py-10">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
-        {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <span className="text-xl">🐉</span>
-          <span className="font-black text-sm tracking-widest uppercase gold-gradient-text">
-            Dragon vs Tiger Insights
-          </span>
-          <span className="text-xl">🐅</span>
-        </div>
-
-        {/* Disclaimers */}
-        <div
-          className="max-w-xl mx-auto mb-6 text-xs text-[oklch(0.50_0_0)] leading-relaxed space-y-1 p-4 rounded-xl"
-          style={{ border: "1px solid oklch(0.22 0.004 285)" }}
-        >
-          <p className="font-semibold text-[oklch(0.60_0_0)]">
-            ⚠️ This is not financial advice. No guaranteed results.
-          </p>
-          <p>For educational &amp; entertainment purposes only.</p>
-          <p>
-            Participate responsibly. Past patterns do not guarantee future
-            outcomes.
-          </p>
-        </div>
-
-        {/* Brand */}
-        <p className="text-[oklch(0.40_0_0)] text-xs">
-          Dragon vs Tiger Insights © {year}. Built with love using{" "}
-          <a
-            href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(hostname)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-[oklch(0.74_0.13_85)] transition-colors"
+    <footer
+      style={{
+        background: "#0a0a0f",
+        borderTop: "1px solid rgba(255,255,255,0.04)",
+        padding: "48px 20px 32px",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "1200px",
+          margin: "0 auto",
+          display: "flex",
+          flexDirection: "column",
+          gap: "32px",
+          alignItems: "center",
+          textAlign: "center",
+        }}
+      >
+        <div>
+          <div
+            style={{
+              fontFamily: "Poppins, sans-serif",
+              fontWeight: 900,
+              fontSize: "28px",
+              marginBottom: "8px",
+            }}
           >
-            caffeine.ai
-          </a>
-        </p>
+            <span className="neon-text-gradient">DvT</span>
+            <span style={{ marginLeft: 4 }}>🔥</span>
+          </div>
+          <p
+            style={{
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "13px",
+              color: "#5a5e6b",
+              margin: 0,
+            }}
+          >
+            Dragon vs Tiger Insights Channel
+          </p>
+        </div>
+
+        <nav
+          style={{
+            display: "flex",
+            gap: "24px",
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          {footerLinks.map((item) => (
+            <a
+              key={item}
+              href={`#${item.toLowerCase().replace(/ /g, "-")}`}
+              style={{
+                fontFamily: "Poppins, sans-serif",
+                fontSize: "12px",
+                fontWeight: 600,
+                letterSpacing: "0.08em",
+                color: "#5a5e6b",
+                textDecoration: "none",
+                transition: "color 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "#a9afbf";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "#5a5e6b";
+              }}
+            >
+              {item.toUpperCase()}
+            </a>
+          ))}
+        </nav>
+
+        <div
+          style={{
+            borderTop: "1px solid rgba(255,255,255,0.04)",
+            paddingTop: "24px",
+            width: "100%",
+          }}
+        >
+          <p
+            style={{
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "12px",
+              color: "#3a3e4b",
+              margin: 0,
+            }}
+          >
+            © {year}. Built with ❤️ using{" "}
+            <a
+              href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(hostname)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#5a5e6b", textDecoration: "none" }}
+            >
+              caffeine.ai
+            </a>
+          </p>
+        </div>
       </div>
     </footer>
   );
 }
 
-// ─── Sticky Floating Button ───────────────────────────────────────────────────
-function StickyButton() {
-  const visible = useStickyButton();
-
+function StickyFloatingButton() {
   return (
     <div
-      className={`fixed bottom-6 right-4 sm:right-6 z-50 transition-all duration-300 ${
-        visible
-          ? "opacity-100 translate-y-0"
-          : "opacity-0 translate-y-4 pointer-events-none"
-      }`}
+      style={{
+        position: "fixed",
+        bottom: "24px",
+        right: "20px",
+        zIndex: 9998,
+      }}
+      className="hidden sm:block"
     >
       <a
-        href="https://t.me/+Enkv9X8zDGc2NWJl"
+        href={TELEGRAM_LINK}
         target="_blank"
         rel="noopener noreferrer"
-        data-ocid="sticky.primary_button"
-        className="btn-red animate-pulse-glow inline-flex items-center gap-2 text-white font-bold text-sm px-5 py-3 rounded-full shadow-2xl"
+        data-ocid="floating.join_now.button"
+        className="cta-btn"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "8px",
+          borderRadius: "999px",
+          padding: "14px 28px",
+          fontSize: "15px",
+          fontFamily: "Poppins, sans-serif",
+          fontWeight: 800,
+          color: "#fff",
+          textDecoration: "none",
+          letterSpacing: "0.05em",
+        }}
       >
-        <Send className="w-4 h-4" />
-        <span className="hidden sm:inline">Join on Telegram</span>
-        <span className="sm:hidden">Join</span>
+        JOIN NOW 🚀
       </a>
     </div>
   );
 }
 
-// ─── App ──────────────────────────────────────────────────────────────────────
-export default function App() {
-  useScrollReveal();
-
+function MobileBottomBar() {
   return (
     <div
-      className="min-h-screen font-poppins"
-      style={{ backgroundColor: "oklch(0.08 0.003 285)" }}
+      className="block sm:hidden"
+      style={{
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 9998,
+        padding: "12px 16px",
+        background: "rgba(13,13,13,0.97)",
+        borderTop: "1px solid rgba(255,255,255,0.06)",
+        backdropFilter: "blur(12px)",
+      }}
     >
-      <Nav />
+      <a
+        href={TELEGRAM_LINK}
+        target="_blank"
+        rel="noopener noreferrer"
+        data-ocid="floating.mobile_join.button"
+        className="cta-btn"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "8px",
+          borderRadius: "999px",
+          padding: "16px",
+          fontSize: "16px",
+          fontFamily: "Poppins, sans-serif",
+          fontWeight: 800,
+          color: "#fff",
+          textDecoration: "none",
+          letterSpacing: "0.05em",
+          width: "100%",
+        }}
+      >
+        JOIN NOW 🚀
+      </a>
+    </div>
+  );
+}
+
+export default function App() {
+  const [scrolled, setScrolled] = useState(false);
+  const ticking = useRef(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (!ticking.current) {
+        requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 20);
+          ticking.current = false;
+        });
+        ticking.current = true;
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <div style={{ background: "#0d0d0d", minHeight: "100vh" }}>
+      <Header scrolled={scrolled} />
       <main>
-        <Hero />
-        <Features />
-        <HowItWorks />
-        <CtaBand />
+        <HeroSection />
+        <FeaturesSection />
+        <HowItWorksSection />
+        <MainCtaSection />
+        <SocialProofSection />
+        <DisclaimerSection />
       </main>
       <Footer />
-      <StickyButton />
+      <StickyFloatingButton />
+      <MobileBottomBar />
+      <LiveNotifications />
     </div>
   );
 }
