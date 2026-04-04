@@ -16,8 +16,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        poppins: ['Poppins', 'sans-serif'],
-        sans: ['Poppins', 'sans-serif'],
+        poppins: ["Poppins", "sans-serif"],
+        sans: ["Poppins", "sans-serif"],
       },
       colors: {
         border: "oklch(var(--border))",
@@ -70,17 +70,6 @@ export default {
           border: "oklch(var(--sidebar-border))",
           ring: "oklch(var(--sidebar-ring))",
         },
-        neon: {
-          red: '#ff2e2e',
-          blue: '#2979ff',
-          purple: '#9c27b0',
-          gold: '#f5c542',
-        },
-        dvt: {
-          bg: '#0d0d0d',
-          card: '#14141b',
-          panel: '#1a1b22',
-        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -89,10 +78,8 @@ export default {
       },
       boxShadow: {
         xs: "0 1px 2px 0 rgba(0,0,0,0.05)",
-        'neon-red': '0 0 20px rgba(255,46,46,0.5), 0 0 40px rgba(255,46,46,0.2)',
-        'neon-blue': '0 0 20px rgba(41,121,255,0.5), 0 0 40px rgba(41,121,255,0.2)',
-        'neon-purple': '0 0 20px rgba(156,39,176,0.5), 0 0 40px rgba(156,39,176,0.2)',
-        'neon-gold': '0 0 20px rgba(245,197,66,0.5), 0 0 40px rgba(245,197,66,0.2)',
+        gold: "0 0 20px oklch(0.74 0.13 85 / 0.3)",
+        "red-glow": "0 0 30px rgba(194, 30, 30, 0.5)",
       },
       keyframes: {
         "accordion-down": {

@@ -1,1382 +1,704 @@
-import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
-import { AnimatedCounter } from "./components/AnimatedCounter";
-import { LiveNotifications } from "./components/LiveNotifications";
-import { ParticleCanvas } from "./components/ParticleCanvas";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-const TELEGRAM_LINK = "https://t.me/+Enkv9X8zDGc2NWJl";
+const APP_LINK = "https://rummyloot.in?from_gameid=8979123&channelCode=8959779";
 
-function CtaButton({
-  children,
+declare global {
+  interface Window {
+    fbq?: (...args: unknown[]) => void;
+  }
+}
+
+function trackDownload() {
+  if (window.fbq) window.fbq("trackCustom", "DownloadApp");
+  window.open(APP_LINK, "_blank", "noopener,noreferrer");
+}
+
+// ── Shimmer CTA Button ──────────────────────────────────────────────────────
+function DownloadButton({
   size = "md",
-  "data-ocid": ocid,
-}: {
-  children: React.ReactNode;
-  size?: "md" | "lg";
-  "data-ocid"?: string;
-}) {
+  label = "DOWNLOAD APP NOW",
+}: { size?: "md" | "lg"; label?: string }) {
+  const cls =
+    size === "lg" ? "w-full py-5 text-xl md:text-2xl" : "py-4 px-8 text-lg";
   return (
-    <a
-      href={TELEGRAM_LINK}
-      target="_blank"
-      rel="noopener noreferrer"
-      data-ocid={ocid}
-      className="cta-btn"
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: "10px",
-        borderRadius: "999px",
-        fontFamily: "Poppins, sans-serif",
-        fontWeight: 800,
-        textDecoration: "none",
-        color: "#fff",
-        letterSpacing: "0.03em",
-        padding: size === "lg" ? "20px 48px" : "14px 32px",
-        fontSize: size === "lg" ? "20px" : "16px",
-        cursor: "pointer",
-        border: "none",
-        outline: "none",
-        userSelect: "none",
-      }}
+    <button
+      type="button"
+      data-ocid="cta.primary_button"
+      onClick={trackDownload}
+      className={`btn-download animate-pulse-gold ${cls} rounded-2xl font-black uppercase tracking-wider`}
     >
-      {children}
-      <span
-        className="live-dot"
-        style={{
-          width: "10px",
-          height: "10px",
-          borderRadius: "50%",
-          flexShrink: 0,
-        }}
-      />
-      <span
-        style={{
-          fontSize: size === "lg" ? "13px" : "11px",
-          fontWeight: 700,
-          letterSpacing: "0.1em",
-          color: "#ff2e2e",
-          background: "rgba(255,46,46,0.15)",
-          borderRadius: "4px",
-          padding: "2px 6px",
-        }}
-      >
-        LIVE
-      </span>
-    </a>
+      {label}
+    </button>
   );
 }
 
-function Header({ scrolled }: { scrolled: boolean }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  const navLinks = [
-    { label: "HOME", href: "#home" },
-    { label: "FEATURES", href: "#features" },
-    { label: "HOW IT WORKS", href: "#how-it-works" },
-    { label: "COMMUNITY", href: "#community" },
-  ];
-
-  return (
-    <header
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1000,
-        transition: "background 0.3s ease, backdrop-filter 0.3s ease",
-        background: scrolled ? "rgba(13,13,13,0.95)" : "transparent",
-        backdropFilter: scrolled ? "blur(16px)" : "none",
-        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "none",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          padding: "0 20px",
-          height: "64px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        {/* Logo */}
-        <div
-          style={{
-            fontFamily: "Poppins, sans-serif",
-            fontWeight: 900,
-            fontSize: "22px",
-            letterSpacing: "0.05em",
-          }}
-        >
-          <span className="neon-text-gradient">DvT</span>
-          <span style={{ marginLeft: 4 }}>🔥</span>
-        </div>
-
-        {/* Desktop Nav */}
-        <nav
-          style={{ display: "flex", gap: "32px", alignItems: "center" }}
-          className="hidden md:flex"
-        >
-          {navLinks.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              data-ocid={`nav.${link.label.toLowerCase().replace(/ /g, "_")}.link`}
-              style={{
-                fontFamily: "Poppins, sans-serif",
-                fontSize: "12px",
-                fontWeight: 600,
-                letterSpacing: "0.12em",
-                color: "#a9afbf",
-                textDecoration: "none",
-                transition: "color 0.2s ease",
-                textTransform: "uppercase",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "#f2f4ff";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "#a9afbf";
-              }}
-            >
-              {link.label}
-            </a>
-          ))}
-          <a
-            href={TELEGRAM_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-ocid="nav.join_now.button"
-            style={{
-              fontFamily: "Poppins, sans-serif",
-              fontSize: "12px",
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              color: "#f2f4ff",
-              textDecoration: "none",
-              padding: "8px 20px",
-              borderRadius: "999px",
-              border: "1px solid transparent",
-              background:
-                "linear-gradient(#0d0d0d, #0d0d0d) padding-box, linear-gradient(90deg, #ff2e2e, #2979ff, #9c27b0, #f5c542) border-box",
-              transition: "box-shadow 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.boxShadow = "0 0 16px rgba(41,121,255,0.4)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = "none";
-            }}
-          >
-            JOIN NOW
-          </a>
-        </nav>
-
-        {/* Mobile menu button */}
-        <button
-          type="button"
-          className="md:hidden"
-          onClick={() => setMenuOpen((o) => !o)}
-          data-ocid="nav.menu.toggle"
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            color: "#f2f4ff",
-            fontSize: "24px",
-            padding: "4px",
-          }}
-          aria-label="Toggle menu"
-        >
-          {menuOpen ? "✕" : "☰"}
-        </button>
-      </div>
-
-      {/* Mobile dropdown */}
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            style={{
-              background: "rgba(13,13,13,0.98)",
-              borderBottom: "1px solid rgba(255,255,255,0.06)",
-              padding: "16px 20px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "16px",
-            }}
-          >
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={() => setMenuOpen(false)}
-                style={{
-                  fontFamily: "Poppins, sans-serif",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  letterSpacing: "0.1em",
-                  color: "#a9afbf",
-                  textDecoration: "none",
-                  textTransform: "uppercase",
-                }}
-              >
-                {link.label}
-              </a>
-            ))}
-            <CtaButton size="md" data-ocid="nav.mobile.join_button">
-              👉 JOIN TELEGRAM NOW
-            </CtaButton>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </header>
-  );
-}
-
+// ── Hero Section ───────────────────────────────────────────────────────────
 function HeroSection() {
-  const flags = ["🇮🇳", "🇸🇦", "🇲🇾", "🇵🇭", "🇧🇩"];
-
   return (
     <section
-      id="home"
-      style={{
-        position: "relative",
-        minHeight: "100vh",
-        background:
-          "radial-gradient(ellipse 80% 60% at 50% 30%, rgba(41,121,255,0.08) 0%, rgba(156,39,176,0.06) 40%, transparent 70%), #0d0d0d",
-        display: "flex",
-        alignItems: "center",
-        overflow: "hidden",
-        paddingTop: "64px",
-      }}
+      data-ocid="hero.section"
+      className="relative min-h-screen flex flex-col items-center justify-center text-center px-5 overflow-hidden"
+      style={{ background: "#0d0d0d" }}
     >
-      <ParticleCanvas />
-
-      {/* Glow orbs */}
-      <div
-        style={{
-          position: "absolute",
-          top: "20%",
-          left: "-10%",
-          width: "400px",
-          height: "400px",
-          borderRadius: "50%",
-          background: "rgba(255,46,46,0.06)",
-          filter: "blur(80px)",
-          pointerEvents: "none",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          bottom: "10%",
-          right: "-5%",
-          width: "500px",
-          height: "500px",
-          borderRadius: "50%",
-          background: "rgba(41,121,255,0.06)",
-          filter: "blur(100px)",
-          pointerEvents: "none",
-        }}
-      />
-
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          maxWidth: "1200px",
-          margin: "0 auto",
-          padding: "60px 20px",
-          display: "grid",
-          gridTemplateColumns: "1fr",
-          gap: "40px",
-          alignItems: "center",
-        }}
-        className="lg:grid-cols-2"
-      >
-        {/* Left */}
-        <motion.div
-          initial={{ opacity: 0, x: -40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-          style={{ display: "flex", flexDirection: "column", gap: "24px" }}
-        >
-          {/* Eyebrow */}
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              background: "rgba(41,121,255,0.1)",
-              border: "1px solid rgba(41,121,255,0.25)",
-              borderRadius: "999px",
-              padding: "6px 16px",
-              alignSelf: "flex-start",
-            }}
-          >
-            <span
-              style={{
-                fontFamily: "Poppins, sans-serif",
-                fontSize: "11px",
-                fontWeight: 700,
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
-                color: "#2979ff",
-              }}
-            >
-              DRAGON VS TIGER INSIGHTS CHANNEL 🔥
-            </span>
-          </div>
-
-          {/* Headline */}
-          <h1
-            style={{
-              fontFamily: "Poppins, sans-serif",
-              fontSize: "clamp(36px, 6vw, 64px)",
-              fontWeight: 900,
-              lineHeight: 1.05,
-              color: "#f2f4ff",
-              margin: 0,
-            }}
-          >
-            Get <span className="neon-text-gradient">Daily Analysis,</span>
-            <br />
-            Trends &amp; Strategies
-          </h1>
-
-          {/* Trust line */}
-          <p
-            style={{
-              fontFamily: "Poppins, sans-serif",
-              fontSize: "15px",
-              fontWeight: 400,
-              color: "#a9afbf",
-              margin: 0,
-            }}
-          >
-            ✅ Active community &nbsp;|&nbsp; 🔄 Regular updates &nbsp;|&nbsp;
-            🆓 Free access
-          </p>
-
-          {/* CTA */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "16px",
-              flexWrap: "wrap",
-            }}
-          >
-            <CtaButton size="lg" data-ocid="hero.join_now.primary_button">
-              👉 JOIN TELEGRAM NOW
-            </CtaButton>
-          </div>
-
-          {/* Members badge */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            {flags.map((flag) => (
-              <span
-                key={flag}
-                style={{
-                  fontSize: "24px",
-                  filter: "drop-shadow(0 0 6px rgba(255,200,0,0.5))",
-                }}
-              >
-                {flag}
-              </span>
-            ))}
-            <span
-              style={{
-                fontFamily: "Poppins, sans-serif",
-                fontSize: "13px",
-                color: "#a9afbf",
-                fontWeight: 600,
-              }}
-            >
-              12,800+ members worldwide
-            </span>
-          </div>
-        </motion.div>
-
-        {/* Right - Dragon vs Tiger Illustration */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.85 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-          className="hero-illustration"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <div
-            style={{
-              position: "relative",
-              width: "320px",
-              height: "320px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {/* Outer glow ring */}
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                borderRadius: "50%",
-                background:
-                  "conic-gradient(from 0deg, #ff2e2e22, #2979ff22, #9c27b022, #f5c54222, #ff2e2e22)",
-                filter: "blur(20px)",
-                animation: "rotateSlow 8s linear infinite",
-              }}
-            />
-            <div
-              style={{
-                position: "absolute",
-                inset: "20px",
-                borderRadius: "50%",
-                border: "2px solid transparent",
-                background:
-                  "linear-gradient(#0d0d0d, #0d0d0d) padding-box, conic-gradient(from 0deg, #ff2e2e, #2979ff, #9c27b0, #f5c542, #ff2e2e) border-box",
-                animation: "rotateSlow 6s linear infinite",
-              }}
-            />
-            {/* VS Text center */}
-            <div
-              style={{
-                position: "absolute",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                zIndex: 2,
-              }}
-            >
-              <span style={{ fontSize: "72px", lineHeight: 1 }}>🐉</span>
-              <span
-                style={{
-                  fontFamily: "Poppins, sans-serif",
-                  fontWeight: 900,
-                  fontSize: "28px",
-                  letterSpacing: "0.15em",
-                }}
-                className="neon-text-gradient"
-              >
-                VS
-              </span>
-              <span style={{ fontSize: "72px", lineHeight: 1 }}>🐅</span>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
-
-function FeaturesSection() {
-  const features = [
-    {
-      icon: "📊",
-      color: "#ff2e2e",
-      title: "Daily Insights & Analysis",
-      desc: "In-depth breakdowns of Dragon vs Tiger patterns, delivered fresh every day.",
-    },
-    {
-      icon: "♟️",
-      color: "#2979ff",
-      title: "Strategy Discussions",
-      desc: "Community-driven strategy threads. Learn from thousands of experienced members.",
-    },
-    {
-      icon: "⚡",
-      color: "#9c27b0",
-      title: "Real-time Updates",
-      desc: "Instant alerts and live commentary as situations develop — never miss a beat.",
-    },
-    {
-      icon: "🎓",
-      color: "#f5c542",
-      title: "Beginner-friendly Guidance",
-      desc: "Step-by-step guides and educational content for members at every level.",
-    },
-  ];
-
-  return (
-    <section
-      id="features"
-      style={{
-        padding: "80px 20px",
-        background: "#0d0d0d",
-        position: "relative",
-      }}
-    >
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-          style={{ textAlign: "center", marginBottom: "56px" }}
-        >
-          <p
-            style={{
-              fontFamily: "Poppins, sans-serif",
-              fontSize: "12px",
-              fontWeight: 700,
-              letterSpacing: "0.2em",
-              color: "#2979ff",
-              textTransform: "uppercase",
-              marginBottom: "12px",
-            }}
-          >
-            Why Join Us
-          </p>
-          <h2
-            className="section-title"
-            style={{
-              fontFamily: "Poppins, sans-serif",
-              fontSize: "clamp(24px, 4vw, 36px)",
-              color: "#f2f4ff",
-              margin: 0,
-            }}
-          >
-            Everything You Need to Stay{" "}
-            <span className="neon-text-gradient">Informed</span>
-          </h2>
-        </motion.div>
-
+      {/* Animated orbs */}
+      <div className="absolute inset-0 pointer-events-none">
         <div
+          className="animate-hero-glow absolute"
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: "24px",
-          }}
-        >
-          {features.map((f, i) => (
-            <motion.div
-              key={f.title}
-              data-ocid={`features.item.${i + 1}`}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="neon-card"
-              style={{
-                borderRadius: "16px",
-                padding: "32px 24px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "16px",
-              }}
-            >
-              <div
-                style={{
-                  width: "52px",
-                  height: "52px",
-                  borderRadius: "12px",
-                  background: `${f.color}18`,
-                  border: `1px solid ${f.color}40`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "24px",
-                  boxShadow: `0 0 16px ${f.color}30`,
-                }}
-              >
-                {f.icon}
-              </div>
-              <h3
-                style={{
-                  fontFamily: "Poppins, sans-serif",
-                  fontSize: "17px",
-                  fontWeight: 700,
-                  color: "#f2f4ff",
-                  margin: 0,
-                }}
-              >
-                {f.title}
-              </h3>
-              <p
-                style={{
-                  fontFamily: "Poppins, sans-serif",
-                  fontSize: "14px",
-                  color: "#a9afbf",
-                  lineHeight: 1.6,
-                  margin: 0,
-                }}
-              >
-                {f.desc}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function HowItWorksSection() {
-  const steps = [
-    {
-      num: "01",
-      color: "#ff2e2e",
-      title: "Join Telegram Channel",
-      desc: "Click the JOIN NOW button and get instant access to our private Telegram community.",
-      icon: "📱",
-    },
-    {
-      num: "02",
-      color: "#9c27b0",
-      title: "Check Daily Updates",
-      desc: "Every day we share fresh analysis, pattern observations, and strategy breakdowns.",
-      icon: "📋",
-    },
-    {
-      num: "03",
-      color: "#2979ff",
-      title: "Follow Insights Responsibly",
-      desc: "Use our educational content to stay informed. Always play responsibly.",
-      icon: "🎯",
-    },
-  ];
-
-  return (
-    <section
-      id="how-it-works"
-      style={{
-        padding: "80px 20px",
-        background: "linear-gradient(180deg, #0d0d0d 0%, #11111a 100%)",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "600px",
-          height: "300px",
-          background:
-            "radial-gradient(ellipse, rgba(156,39,176,0.05), transparent 70%)",
-          pointerEvents: "none",
-        }}
-      />
-      <div
-        style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-          style={{ textAlign: "center", marginBottom: "56px" }}
-        >
-          <p
-            style={{
-              fontFamily: "Poppins, sans-serif",
-              fontSize: "12px",
-              fontWeight: 700,
-              letterSpacing: "0.2em",
-              color: "#9c27b0",
-              textTransform: "uppercase",
-              marginBottom: "12px",
-            }}
-          >
-            Simple Process
-          </p>
-          <h2
-            className="section-title"
-            style={{
-              fontFamily: "Poppins, sans-serif",
-              fontSize: "clamp(24px, 4vw, 36px)",
-              color: "#f2f4ff",
-              margin: 0,
-            }}
-          >
-            How It <span className="neon-text-gradient">Works</span>
-          </h2>
-        </motion.div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-            gap: "32px",
-          }}
-        >
-          {steps.map((step, i) => (
-            <motion.div
-              key={step.num}
-              data-ocid={`how_it_works.item.${i + 1}`}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.5, delay: i * 0.15 }}
-              style={{
-                background: "rgba(26, 27, 34, 0.6)",
-                border: `1px solid ${step.color}25`,
-                borderRadius: "20px",
-                padding: "36px 28px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "20px",
-                position: "relative",
-                overflow: "hidden",
-              }}
-            >
-              <div
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  right: 0,
-                  width: "120px",
-                  height: "120px",
-                  background: `radial-gradient(circle, ${step.color}12, transparent 70%)`,
-                  borderRadius: "0 20px 0 0",
-                  pointerEvents: "none",
-                }}
-              />
-              <div
-                style={{
-                  fontFamily: "Poppins, sans-serif",
-                  fontSize: "52px",
-                  fontWeight: 900,
-                  color: step.color,
-                  lineHeight: 1,
-                  textShadow: `0 0 20px ${step.color}60`,
-                }}
-              >
-                {step.num}
-              </div>
-              <div style={{ fontSize: "36px" }}>{step.icon}</div>
-              <h3
-                style={{
-                  fontFamily: "Poppins, sans-serif",
-                  fontSize: "19px",
-                  fontWeight: 700,
-                  color: "#f2f4ff",
-                  margin: 0,
-                }}
-              >
-                {step.title}
-              </h3>
-              <p
-                style={{
-                  fontFamily: "Poppins, sans-serif",
-                  fontSize: "14px",
-                  color: "#a9afbf",
-                  lineHeight: 1.65,
-                  margin: 0,
-                }}
-              >
-                {step.desc}
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function MainCtaSection() {
-  const ringsSizes = [300, 500, 700];
-
-  return (
-    <section
-      style={{
-        padding: "100px 20px",
-        background:
-          "radial-gradient(ellipse 80% 70% at 50% 50%, rgba(41,121,255,0.1) 0%, rgba(156,39,176,0.08) 40%, rgba(255,46,46,0.05) 70%, transparent 100%), #0d0d0d",
-        textAlign: "center",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      {/* Decorative rings */}
-      {ringsSizes.map((size) => (
-        <div
-          key={size}
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: `${size}px`,
-            height: `${size}px`,
+            width: "600px",
+            height: "600px",
+            top: "-15%",
+            left: "-10%",
             borderRadius: "50%",
-            border: "1px solid rgba(41,121,255,0.08)",
-            pointerEvents: "none",
+            background:
+              "radial-gradient(circle, rgba(245,197,66,0.18) 0%, rgba(0,200,83,0.1) 50%, transparent 70%)",
           }}
         />
-      ))}
-
-      <div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          maxWidth: "700px",
-          margin: "0 auto",
-        }}
-      >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
+        <div
+          className="animate-float-2 absolute"
           style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "28px",
-            alignItems: "center",
+            width: "500px",
+            height: "500px",
+            bottom: "-10%",
+            right: "-10%",
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle, rgba(0,200,83,0.15) 0%, rgba(245,197,66,0.08) 50%, transparent 70%)",
           }}
+        />
+      </div>
+
+      <div className="relative z-10 max-w-2xl mx-auto">
+        <p
+          className="text-sm font-semibold uppercase tracking-widest mb-3"
+          style={{ color: "#00c853" }}
         >
-          <p
+          🎮 India&apos;s Fastest Growing Rummy App
+        </p>
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black leading-tight mb-5 gold-gradient-text">
+          Get ₹101 Welcome Bonus 🎁
+        </h1>
+        <p className="text-lg sm:text-xl text-white/80 mb-6 font-medium">
+          Download the app &amp; start playing instantly
+        </p>
+        <div className="flex flex-wrap justify-center gap-3 mb-10 text-sm font-semibold">
+          <span
+            className="px-4 py-2 rounded-full"
             style={{
-              fontFamily: "Poppins, sans-serif",
-              fontSize: "12px",
-              fontWeight: 700,
-              letterSpacing: "0.2em",
+              background: "rgba(0,200,83,0.15)",
+              color: "#00c853",
+              border: "1px solid rgba(0,200,83,0.3)",
+            }}
+          >
+            ⚡ Fast Withdrawal
+          </span>
+          <span
+            className="px-4 py-2 rounded-full"
+            style={{
+              background: "rgba(245,197,66,0.12)",
               color: "#f5c542",
-              textTransform: "uppercase",
+              border: "1px solid rgba(245,197,66,0.3)",
             }}
           >
-            ⚡ Don&apos;t Miss Out
-          </p>
-          <h2
+            ✅ Easy Signup
+          </span>
+          <span
+            className="px-4 py-2 rounded-full"
             style={{
-              fontFamily: "Poppins, sans-serif",
-              fontSize: "clamp(28px, 5vw, 48px)",
-              fontWeight: 900,
-              color: "#f2f4ff",
-              margin: 0,
-              lineHeight: 1.1,
+              background: "rgba(0,200,83,0.15)",
+              color: "#00c853",
+              border: "1px solid rgba(0,200,83,0.3)",
             }}
           >
-            Ready to Get{" "}
-            <span className="neon-text-gradient">Real Insights?</span>
-          </h2>
-          <p
+            🔒 Secure Platform
+          </span>
+        </div>
+        <div className="flex flex-col items-center gap-3">
+          <span
+            className="animate-badge text-xs font-black uppercase tracking-wider px-4 py-1.5 rounded-full"
             style={{
-              fontFamily: "Poppins, sans-serif",
-              fontSize: "16px",
-              color: "#a9afbf",
-              margin: 0,
-              maxWidth: "480px",
+              background: "rgba(245,197,66,0.2)",
+              color: "#f5c542",
+              border: "1px solid rgba(245,197,66,0.5)",
             }}
           >
-            Join thousands of members who get daily Dragon vs Tiger analysis,
-            trends, and strategy breakdowns — completely free.
-          </p>
-          <CtaButton size="lg" data-ocid="cta.join_now.primary_button">
-            👉 JOIN TELEGRAM NOW
-          </CtaButton>
-        </motion.div>
+            🔥 Trending Now
+          </span>
+          <DownloadButton size="lg" />
+        </div>
       </div>
     </section>
+  );
+}
+
+// ── Phone Mockup ──────────────────────────────────────────────────────────
+function AppPreviewSection() {
+  return (
+    <section
+      data-ocid="preview.section"
+      className="py-20 px-5 flex flex-col items-center"
+      style={{ background: "#0f0f0f" }}
+    >
+      <h2
+        className="text-2xl sm:text-3xl font-bold text-center mb-12"
+        style={{ color: "#f5c542" }}
+      >
+        See It In Action
+      </h2>
+      <div className="animate-float-phone">
+        {/* Phone shell */}
+        <div
+          className="relative mx-auto"
+          style={{
+            width: "240px",
+            height: "490px",
+            borderRadius: "36px",
+            background: "#1a1a1a",
+            border: "3px solid #333",
+            boxShadow:
+              "0 0 60px rgba(245,197,66,0.2), 0 40px 80px rgba(0,0,0,0.6)",
+            overflow: "hidden",
+          }}
+        >
+          {/* Status bar */}
+          <div
+            className="flex justify-between items-center px-5 pt-3 pb-2"
+            style={{ background: "#111" }}
+          >
+            <span className="text-white text-xs font-semibold">9:41</span>
+            <div
+              className="w-16 h-3 rounded-full"
+              style={{ background: "#222" }}
+            />
+            <span className="text-white text-xs">📶</span>
+          </div>
+          {/* App header */}
+          <div
+            className="px-4 py-3 flex justify-between items-center"
+            style={{ background: "#161616" }}
+          >
+            <span className="font-black text-lg" style={{ color: "#f5c542" }}>
+              RummyLoot
+            </span>
+            <span
+              className="text-xs px-2 py-1 rounded-full font-bold"
+              style={{ background: "rgba(0,200,83,0.2)", color: "#00c853" }}
+            >
+              LIVE
+            </span>
+          </div>
+          {/* Balance card */}
+          <div
+            className="mx-3 mt-3 p-4 rounded-2xl"
+            style={{
+              background: "linear-gradient(135deg, #1e1e1e, #252525)",
+              border: "1px solid rgba(245,197,66,0.3)",
+            }}
+          >
+            <p className="text-xs text-white/50 mb-1">Wallet Balance</p>
+            <p className="text-2xl font-black" style={{ color: "#f5c542" }}>
+              ₹101.00
+            </p>
+            <p className="text-xs mt-1" style={{ color: "#00c853" }}>
+              +₹101 Welcome Bonus
+            </p>
+          </div>
+          {/* Game cards row */}
+          <div className="px-3 mt-4">
+            <p className="text-xs text-white/40 mb-2">Active Tables</p>
+            <div className="space-y-2">
+              {[
+                ["♠", "Points Rummy", "₹10/entry", "12"],
+                ["♥", "Pool Rummy", "₹25/entry", "8"],
+              ].map(([suit, name, entry, players]) => (
+                <div
+                  key={name}
+                  className="flex items-center justify-between p-2.5 rounded-xl"
+                  style={{ background: "#1e1e1e", border: "1px solid #2a2a2a" }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{suit}</span>
+                    <div>
+                      <p className="text-xs font-semibold text-white">{name}</p>
+                      <p className="text-xs" style={{ color: "#f5c542" }}>
+                        {entry}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-xs text-white/50">
+                    {players} playing
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Bottom nav */}
+          <div
+            className="absolute bottom-0 left-0 right-0 flex justify-around py-3"
+            style={{ background: "#111", borderTop: "1px solid #222" }}
+          >
+            {["🏠", "🎮", "🏆", "👤"].map((icon) => (
+              <span key={icon} className="text-xl">
+                {icon}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Features Section ──────────────────────────────────────────────────────
+const FEATURES = [
+  {
+    icon: "⚡",
+    title: "Instant Signup",
+    desc: "Join in 30 seconds, no documents needed",
+  },
+  {
+    icon: "🎮",
+    title: "Smooth Gameplay",
+    desc: "Lag-free experience on all devices",
+  },
+  {
+    icon: "🎁",
+    title: "Daily Rewards",
+    desc: "Bonuses and cashback every single day",
+  },
+  {
+    icon: "🛟",
+    title: "24/7 Support",
+    desc: "Round-the-clock help whenever you need it",
+  },
+];
+
+function FeaturesSection() {
+  return (
+    <section
+      data-ocid="features.section"
+      className="py-20 px-5"
+      style={{ background: "#0d0d0d" }}
+    >
+      <h2
+        className="text-2xl sm:text-3xl font-bold text-center mb-12"
+        style={{ color: "#f5c542" }}
+      >
+        Why Players Love Us
+      </h2>
+      <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
+        {FEATURES.map((f, i) => (
+          <div
+            key={f.title}
+            data-ocid={`features.item.${i + 1}`}
+            className="card-glow rounded-2xl p-5 text-center"
+          >
+            <div className="text-4xl mb-3">{f.icon}</div>
+            <h3 className="font-bold text-white text-sm sm:text-base mb-2">
+              {f.title}
+            </h3>
+            <p className="text-xs sm:text-sm text-white/50">{f.desc}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ── CTA Section ───────────────────────────────────────────────────────────
+function CTASection() {
+  return (
+    <section
+      data-ocid="cta.section"
+      className="py-20 px-5 text-center"
+      style={{ background: "#0f0f0f" }}
+    >
+      <h2
+        className="text-3xl sm:text-4xl font-black mb-3"
+        style={{ color: "#f5c542" }}
+      >
+        Ready to Win Big?
+      </h2>
+      <p className="text-white/60 mb-10 text-lg">
+        Start with ₹101 free — no deposit needed
+      </p>
+      <div className="max-w-md mx-auto flex flex-col items-center gap-3">
+        <span
+          className="animate-badge text-xs font-black uppercase tracking-wider px-4 py-1.5 rounded-full"
+          style={{
+            background: "rgba(245,197,66,0.2)",
+            color: "#f5c542",
+            border: "1px solid rgba(245,197,66,0.5)",
+          }}
+        >
+          🔥 Trending Now
+        </span>
+        <DownloadButton size="lg" />
+      </div>
+    </section>
+  );
+}
+
+// ── Animated Counter ──────────────────────────────────────────────────────
+function AnimatedCounter({
+  target,
+  prefix = "",
+  suffix = "",
+}: { target: number; prefix?: string; suffix?: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !started.current) {
+          started.current = true;
+          const duration = 2000;
+          const startTime = performance.now();
+          const tick = (now: number) => {
+            const progress = Math.min((now - startTime) / duration, 1);
+            setCount(Math.floor(progress * target));
+            if (progress < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        }
+      },
+      { threshold: 0.5 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target]);
+
+  return (
+    <div ref={ref}>
+      {prefix}
+      {count.toLocaleString("en-IN")}
+      {suffix}
+    </div>
   );
 }
 
 function SocialProofSection() {
   const stats = [
-    { value: 12800, suffix: "+", label: "Members", color: "#2979ff" },
-    { value: 92, suffix: "%", label: "Accuracy Rate", color: "#9c27b0" },
-    { value: 500, suffix: "+", label: "Daily Updates", color: "#ff2e2e" },
+    { target: 50000, prefix: "", suffix: "+", label: "Users Joined" },
+    { target: 10, prefix: "₹", suffix: " Cr+", label: "Paid Out" },
     {
-      value: 49,
-      suffix: "★",
+      target: 48,
       prefix: "",
-      label: "Rating",
-      color: "#f5c542",
-      display: "4.9★",
+      suffix: "★",
+      label: "App Rating",
+      display: "4.8★",
     },
   ];
-
-  const testimonials = [
-    {
-      name: "Ahmed K.",
-      flag: "🇸🇦",
-      text: "The daily analysis is spot on. I've learned more in one week here than months on my own.",
-      stars: 5,
-    },
-    {
-      name: "Priya M.",
-      flag: "🇮🇳",
-      text: "Super active community. Admin responds fast and the insights are genuinely helpful.",
-      stars: 5,
-    },
-    {
-      name: "Carlos R.",
-      flag: "🇲🇾",
-      text: "Best free channel for Dragon vs Tiger content. The beginner guides saved me a lot of time.",
-      stars: 5,
-    },
-  ];
-
-  const starArr = [1, 2, 3, 4, 5];
-
   return (
     <section
-      id="community"
-      style={{
-        padding: "80px 20px",
-        background: "#0d0d0d",
-      }}
+      data-ocid="social.section"
+      className="py-20 px-5"
+      style={{ background: "#0d0d0d" }}
     >
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-          style={{ textAlign: "center", marginBottom: "56px" }}
-        >
-          <p
-            style={{
-              fontFamily: "Poppins, sans-serif",
-              fontSize: "12px",
-              fontWeight: 700,
-              letterSpacing: "0.2em",
-              color: "#f5c542",
-              textTransform: "uppercase",
-              marginBottom: "12px",
-            }}
-          >
-            Community Trust
-          </p>
-          <h2
-            className="section-title"
-            style={{
-              fontFamily: "Poppins, sans-serif",
-              fontSize: "clamp(24px, 4vw, 36px)",
-              color: "#f2f4ff",
-              margin: 0,
-            }}
-          >
-            Thousands of Members{" "}
-            <span className="neon-text-gradient">Already Joined</span>
-          </h2>
-        </motion.div>
-
-        {/* Stats grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "20px",
-            marginBottom: "64px",
-          }}
-        >
-          {stats.map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              data-ocid={`stats.item.${i + 1}`}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-              style={{
-                background: "rgba(26, 27, 34, 0.7)",
-                border: `1px solid ${stat.color}25`,
-                borderRadius: "16px",
-                padding: "32px 24px",
-                textAlign: "center",
-                boxShadow: `0 0 32px ${stat.color}10`,
-              }}
+      <h2
+        className="text-2xl sm:text-3xl font-bold text-center mb-12"
+        style={{ color: "#f5c542" }}
+      >
+        Join Thousands of Players
+      </h2>
+      <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
+        {stats.map((s, i) => (
+          <div key={s.label} className="card-glow rounded-2xl p-5 text-center">
+            <div
+              className="text-2xl sm:text-3xl font-black mb-2"
+              style={{ color: i === 1 ? "#00c853" : "#f5c542" }}
             >
-              <div
-                style={{
-                  fontFamily: "Poppins, sans-serif",
-                  fontSize: "36px",
-                  fontWeight: 900,
-                  color: stat.color,
-                  textShadow: `0 0 20px ${stat.color}60`,
-                  lineHeight: 1,
-                  marginBottom: "8px",
-                }}
-              >
-                {stat.display ?? (
-                  <AnimatedCounter
-                    target={stat.value}
-                    suffix={stat.suffix}
-                    prefix={stat.prefix}
-                  />
-                )}
-              </div>
-              <div
-                style={{
-                  fontFamily: "Poppins, sans-serif",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  color: "#a9afbf",
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                }}
-              >
-                {stat.label}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Testimonials */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: "24px",
-          }}
-        >
-          {testimonials.map((t, i) => (
-            <motion.div
-              key={t.name}
-              data-ocid={`testimonials.item.${i + 1}`}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="neon-card"
-              style={{
-                borderRadius: "16px",
-                padding: "28px 24px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "16px",
-              }}
-            >
-              <div style={{ display: "flex", gap: "4px" }}>
-                {starArr.slice(0, t.stars).map((s) => (
-                  <span key={s} style={{ color: "#f5c542", fontSize: "16px" }}>
-                    ★
-                  </span>
-                ))}
-              </div>
-              <p
-                style={{
-                  fontFamily: "Poppins, sans-serif",
-                  fontSize: "14px",
-                  color: "#d0d4e0",
-                  lineHeight: 1.65,
-                  margin: 0,
-                  fontStyle: "italic",
-                }}
-              >
-                &ldquo;{t.text}&rdquo;
-              </p>
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "10px" }}
-              >
-                <div
-                  style={{
-                    width: "36px",
-                    height: "36px",
-                    borderRadius: "50%",
-                    background: "linear-gradient(135deg, #2979ff, #9c27b0)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "16px",
-                  }}
-                >
-                  {t.flag}
-                </div>
-                <span
-                  style={{
-                    fontFamily: "Poppins, sans-serif",
-                    fontSize: "13px",
-                    fontWeight: 700,
-                    color: "#f2f4ff",
-                  }}
-                >
-                  {t.name}
-                </span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+              {s.display ? (
+                s.display
+              ) : (
+                <AnimatedCounter
+                  target={s.target}
+                  prefix={s.prefix}
+                  suffix={s.suffix}
+                />
+              )}
+            </div>
+            <p className="text-xs text-white/50">{s.label}</p>
+          </div>
+        ))}
       </div>
     </section>
   );
 }
 
-function DisclaimerSection() {
+// ── Urgency / Countdown ───────────────────────────────────────────────────
+function useCountdown() {
+  const [time, setTime] = useState({ h: 23, m: 59, s: 59 });
+  useEffect(() => {
+    const id = setInterval(() => {
+      setTime((prev) => {
+        let { h, m, s } = prev;
+        s -= 1;
+        if (s < 0) {
+          s = 59;
+          m -= 1;
+        }
+        if (m < 0) {
+          m = 59;
+          h -= 1;
+        }
+        if (h < 0) {
+          h = 23;
+          m = 59;
+          s = 59;
+        }
+        return { h, m, s };
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
+  return time;
+}
+
+function UrgencySection() {
+  const { h, m, s } = useCountdown();
+  const pad = (n: number) => String(n).padStart(2, "0");
   return (
     <section
-      style={{
-        padding: "40px 20px",
-        background: "rgba(20,20,27,0.8)",
-        borderTop: "1px solid rgba(255,255,255,0.05)",
-      }}
+      data-ocid="urgency.section"
+      className="py-20 px-5"
+      style={{ background: "#0f0f0f" }}
     >
       <div
-        style={{
-          maxWidth: "800px",
-          margin: "0 auto",
-          textAlign: "center",
-        }}
+        className="urgency-border max-w-md mx-auto rounded-3xl p-8 text-center"
+        style={{ background: "#161616" }}
       >
-        <p
+        <p className="text-3xl mb-2">⏳</p>
+        <h2
+          className="text-2xl sm:text-3xl font-black mb-2"
+          style={{ color: "#f5c542" }}
+        >
+          Limited Time Offer
+        </h2>
+        <p className="text-white/60 mb-8">₹101 Welcome Bonus expires in:</p>
+        <div className="flex justify-center gap-3 mb-8">
+          {[
+            [pad(h), "HRS"],
+            [pad(m), "MIN"],
+            [pad(s), "SEC"],
+          ].map(([val, label]) => (
+            <div key={label} className="flex flex-col items-center">
+              <span
+                className="text-4xl font-black w-16 h-16 flex items-center justify-center rounded-xl"
+                style={{
+                  background: "#0d0d0d",
+                  color: "#f5c542",
+                  border: "1px solid rgba(245,197,66,0.4)",
+                }}
+              >
+                {val}
+              </span>
+              <span className="text-xs text-white/40 mt-1 tracking-widest">
+                {label}
+              </span>
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          data-ocid="urgency.primary_button"
+          onClick={trackDownload}
+          className="w-full py-4 rounded-xl font-black text-lg tracking-wider uppercase"
           style={{
-            fontFamily: "Poppins, sans-serif",
-            fontSize: "12px",
-            color: "#5a5e6b",
-            lineHeight: 1.7,
-            margin: 0,
+            background: "linear-gradient(135deg, #f5c542, #c9a227)",
+            color: "#0d0d0d",
           }}
         >
-          ⚠️ <strong style={{ color: "#7a7e8b" }}>Disclaimer:</strong> This
-          channel is for informational and entertainment purposes only. The
-          content shared does not constitute financial, legal, or professional
-          advice. No guarantees of outcomes are made. Always participate
-          responsibly and within your means.
-        </p>
+          Claim Before It Expires
+        </button>
       </div>
     </section>
   );
 }
 
+// ── Sticky Floating Button ────────────────────────────────────────────────
+function StickyButton() {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 300);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  return (
+    <div
+      data-ocid="sticky.button"
+      className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 transition-all duration-300"
+      style={{
+        transform: visible ? "translateY(0)" : "translateY(100%)",
+        opacity: visible ? 1 : 0,
+        pointerEvents: visible ? "all" : "none",
+      }}
+    >
+      <button
+        type="button"
+        onClick={trackDownload}
+        className="btn-download animate-pulse-gold w-full py-4 text-lg font-black uppercase tracking-wider rounded-2xl"
+      >
+        INSTALL NOW 🚀
+      </button>
+    </div>
+  );
+}
+
+// ── Floating Notifications ────────────────────────────────────────────────
+const NAMES = [
+  "Rahul",
+  "Priya",
+  "Amit",
+  "Sneha",
+  "Vikram",
+  "Anjali",
+  "Rohit",
+  "Kavya",
+  "Suresh",
+  "Neha",
+];
+const AMOUNTS = ["₹250", "₹500", "₹101", "₹750", "₹1,200", "₹350"];
+
+interface Notif {
+  id: number;
+  name: string;
+  amount: string;
+  type: "joined" | "won";
+  leaving: boolean;
+}
+
+function FloatingNotifications() {
+  const [notifs, setNotifs] = useState<Notif[]>([]);
+  const counterRef = useRef(0);
+
+  const addNotif = useCallback(() => {
+    const id = ++counterRef.current;
+    const name = NAMES[Math.floor(Math.random() * NAMES.length)];
+    const amount = AMOUNTS[Math.floor(Math.random() * AMOUNTS.length)];
+    const type: "joined" | "won" = Math.random() > 0.4 ? "won" : "joined";
+    const notif: Notif = { id, name, amount, type, leaving: false };
+    setNotifs((prev) => [...prev.slice(-2), notif]);
+    // auto-dismiss
+    setTimeout(() => {
+      setNotifs((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, leaving: true } : n)),
+      );
+      setTimeout(
+        () => setNotifs((prev) => prev.filter((n) => n.id !== id)),
+        400,
+      );
+    }, 3000);
+  }, []);
+
+  useEffect(() => {
+    const schedule = () => {
+      const delay = 4000 + Math.random() * 4000;
+      return setTimeout(() => {
+        addNotif();
+        schedule();
+      }, delay);
+    };
+    const t = setTimeout(() => {
+      addNotif();
+      const id = schedule();
+      return () => clearTimeout(id);
+    }, 2000);
+    return () => clearTimeout(t);
+  }, [addNotif]);
+
+  return (
+    <div className="fixed bottom-24 left-4 z-40 flex flex-col gap-2">
+      {notifs.map((n) => (
+        <div
+          key={n.id}
+          className={`notification${n.leaving ? " leaving" : ""} flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl`}
+          style={{
+            background: "#1e1e1e",
+            border: "1px solid rgba(245,197,66,0.3)",
+            maxWidth: "220px",
+          }}
+        >
+          <div
+            className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0"
+            style={{
+              background: "linear-gradient(135deg, #00c853, #009b3e)",
+              color: "#0d0d0d",
+            }}
+          >
+            {n.name[0]}
+          </div>
+          <div>
+            <p className="text-xs font-bold text-white leading-snug">
+              {n.name}
+            </p>
+            <p
+              className="text-xs"
+              style={{ color: n.type === "won" ? "#00c853" : "#f5c542" }}
+            >
+              {n.type === "won" ? `just won ${n.amount}` : "just joined 🎉"}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Footer / Disclaimer ───────────────────────────────────────────────────
 function Footer() {
   const year = new Date().getFullYear();
-  const hostname =
-    typeof window !== "undefined" ? window.location.hostname : "";
-  const footerLinks = ["Home", "Features", "How It Works", "Community"];
-
+  const utm = encodeURIComponent(window.location.hostname);
   return (
     <footer
-      style={{
-        background: "#0a0a0f",
-        borderTop: "1px solid rgba(255,255,255,0.04)",
-        padding: "48px 20px 32px",
-      }}
+      className="py-10 px-5 text-center"
+      style={{ background: "#0a0a0a", borderTop: "1px solid #1e1e1e" }}
     >
-      <div
-        style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          display: "flex",
-          flexDirection: "column",
-          gap: "32px",
-          alignItems: "center",
-          textAlign: "center",
-        }}
-      >
-        <div>
-          <div
-            style={{
-              fontFamily: "Poppins, sans-serif",
-              fontWeight: 900,
-              fontSize: "28px",
-              marginBottom: "8px",
-            }}
-          >
-            <span className="neon-text-gradient">DvT</span>
-            <span style={{ marginLeft: 4 }}>🔥</span>
-          </div>
-          <p
-            style={{
-              fontFamily: "Poppins, sans-serif",
-              fontSize: "13px",
-              color: "#5a5e6b",
-              margin: 0,
-            }}
-          >
-            Dragon vs Tiger Insights Channel
-          </p>
-        </div>
-
-        <nav
-          style={{
-            display: "flex",
-            gap: "24px",
-            flexWrap: "wrap",
-            justifyContent: "center",
-          }}
+      <p className="text-white/40 text-xs mb-2">
+        ⚠️ Play responsibly. This app is for entertainment purposes only.
+      </p>
+      <p className="text-white/30 text-xs mb-4">
+        This platform is for users 18+ only. No guaranteed winnings.
+        Participation at own risk.
+      </p>
+      <p className="text-white/25 text-xs">
+        © {year}. Built with ❤️ using{" "}
+        <a
+          href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${utm}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-white/50 transition-colors"
         >
-          {footerLinks.map((item) => (
-            <a
-              key={item}
-              href={`#${item.toLowerCase().replace(/ /g, "-")}`}
-              style={{
-                fontFamily: "Poppins, sans-serif",
-                fontSize: "12px",
-                fontWeight: 600,
-                letterSpacing: "0.08em",
-                color: "#5a5e6b",
-                textDecoration: "none",
-                transition: "color 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "#a9afbf";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "#5a5e6b";
-              }}
-            >
-              {item.toUpperCase()}
-            </a>
-          ))}
-        </nav>
-
-        <div
-          style={{
-            borderTop: "1px solid rgba(255,255,255,0.04)",
-            paddingTop: "24px",
-            width: "100%",
-          }}
-        >
-          <p
-            style={{
-              fontFamily: "Poppins, sans-serif",
-              fontSize: "12px",
-              color: "#3a3e4b",
-              margin: 0,
-            }}
-          >
-            © {year}. Built with ❤️ using{" "}
-            <a
-              href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(hostname)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: "#5a5e6b", textDecoration: "none" }}
-            >
-              caffeine.ai
-            </a>
-          </p>
-        </div>
-      </div>
+          caffeine.ai
+        </a>
+      </p>
     </footer>
   );
 }
 
-function StickyFloatingButton() {
-  return (
-    <div
-      style={{
-        position: "fixed",
-        bottom: "24px",
-        right: "20px",
-        zIndex: 9998,
-      }}
-      className="hidden sm:block"
-    >
-      <a
-        href={TELEGRAM_LINK}
-        target="_blank"
-        rel="noopener noreferrer"
-        data-ocid="floating.join_now.button"
-        className="cta-btn"
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "8px",
-          borderRadius: "999px",
-          padding: "14px 28px",
-          fontSize: "15px",
-          fontFamily: "Poppins, sans-serif",
-          fontWeight: 800,
-          color: "#fff",
-          textDecoration: "none",
-          letterSpacing: "0.05em",
-        }}
-      >
-        JOIN NOW 🚀
-      </a>
-    </div>
-  );
-}
-
-function MobileBottomBar() {
-  return (
-    <div
-      className="block sm:hidden"
-      style={{
-        position: "fixed",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 9998,
-        padding: "12px 16px",
-        background: "rgba(13,13,13,0.97)",
-        borderTop: "1px solid rgba(255,255,255,0.06)",
-        backdropFilter: "blur(12px)",
-      }}
-    >
-      <a
-        href={TELEGRAM_LINK}
-        target="_blank"
-        rel="noopener noreferrer"
-        data-ocid="floating.mobile_join.button"
-        className="cta-btn"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-          borderRadius: "999px",
-          padding: "16px",
-          fontSize: "16px",
-          fontFamily: "Poppins, sans-serif",
-          fontWeight: 800,
-          color: "#fff",
-          textDecoration: "none",
-          letterSpacing: "0.05em",
-          width: "100%",
-        }}
-      >
-        JOIN NOW 🚀
-      </a>
-    </div>
-  );
-}
-
+// ── App ───────────────────────────────────────────────────────────────────
 export default function App() {
-  const [scrolled, setScrolled] = useState(false);
-  const ticking = useRef(false);
-
-  useEffect(() => {
-    const onScroll = () => {
-      if (!ticking.current) {
-        requestAnimationFrame(() => {
-          setScrolled(window.scrollY > 20);
-          ticking.current = false;
-        });
-        ticking.current = true;
-      }
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   return (
-    <div style={{ background: "#0d0d0d", minHeight: "100vh" }}>
-      <Header scrolled={scrolled} />
-      <main>
-        <HeroSection />
-        <FeaturesSection />
-        <HowItWorksSection />
-        <MainCtaSection />
-        <SocialProofSection />
-        <DisclaimerSection />
-      </main>
+    <div
+      className="min-h-screen"
+      style={{
+        background: "#0d0d0d",
+        fontFamily: "'Poppins', 'Montserrat', sans-serif",
+      }}
+    >
+      <HeroSection />
+      <AppPreviewSection />
+      <FeaturesSection />
+      <CTASection />
+      <SocialProofSection />
+      <UrgencySection />
       <Footer />
-      <StickyFloatingButton />
-      <MobileBottomBar />
-      <LiveNotifications />
+      <StickyButton />
+      <FloatingNotifications />
     </div>
   );
 }
